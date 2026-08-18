@@ -110,10 +110,15 @@
             </div>
           </div>
 
-          <!-- Submit Button -->
-          <button type="button" id="btn-generate-teams" class="btn-primary">
-            ⚡ ARMAR EQUIPOS
-          </button>
+          <!-- Submit Buttons Grid -->
+          <div class="submit-buttons-grid">
+            <button type="button" id="btn-generate-teams" class="btn-primary">
+              ⚡ ARMAR EQUIPOS
+            </button>
+            <button type="button" id="btn-draw-captains" class="btn-secondary btn-outline-gold">
+              👑 SORTEAR CAPITANES
+            </button>
+          </div>
         </div>
       </main>
 
@@ -164,6 +169,37 @@
         <button type="button" id="btn-copy-whatsapp" class="btn-secondary" style="width: 100%; margin-top: 6px;">
           📋 COPIAR EQUIPOS PARA WHATSAPP
         </button>
+
+        <!-- ORGANIZADOR DE PAGO: LA VAQUITA -->
+        <div id="vaquita-section" class="card vaquita-card" style="margin-top: 14px;">
+          <div class="card-header">
+            <h3 class="card-title">
+              <span>💰</span> La Vaquita (Costo Cancha)
+            </h3>
+            <span class="badge-count" id="vaquita-progress-badge">0/0 Pagaron</span>
+          </div>
+
+          <p class="hint-text" style="margin-bottom: 12px;">Ingresá el costo total del alquiler y llevá el control de quién pagó.</p>
+
+          <div class="vaquita-inputs-grid">
+            <div class="vaquita-field">
+              <label for="pitch-cost-input">Costo Total ($)</label>
+              <input type="number" id="pitch-cost-input" class="vaquita-input" placeholder="Ej: 30000" min="0" step="500" />
+            </div>
+            <div class="vaquita-field">
+              <label>Por Cabeza</label>
+              <div id="price-per-head" class="vaquita-per-head">$0</div>
+            </div>
+          </div>
+
+          <div class="vaquita-players-list" id="vaquita-players-container">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <button type="button" id="btn-copy-vaquita-whatsapp" class="btn-secondary btn-outline-gold" style="width: 100%; margin-top: 12px;">
+            📋 COPIAR LISTA DE PAGO A WHATSAPP
+          </button>
+        </div>
       </section>
 
       <!-- VIEW 3: Dedicated Match Summary Page -->
@@ -205,6 +241,48 @@
       <section id="tutorial-view" class="view-section" style="display: none;">
         <!-- Rendered dynamically via tutorial.js -->
       </section>
+    </div>
+
+    <!-- MODAL: Sorteo de Capitanes y Moneda -->
+    <div id="captains-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-card">
+        <button type="button" id="btn-close-captains-modal" class="modal-close-btn">&times;</button>
+        
+        <div class="modal-header-tag">👑 SORTEO DE CAPITANES</div>
+        <h2 class="modal-title">¿QUIÉN ELIGE PRIMERO?</h2>
+        
+        <div class="captains-versus-container">
+          <div class="captain-box captain-1">
+            <div class="captain-badge">CAPITÁN 1</div>
+            <div id="captain-1-name" class="captain-name">Jugador A</div>
+            <div class="captain-coin-side">🪙 CARA</div>
+          </div>
+          
+          <div class="vs-badge">VS</div>
+          
+          <div class="captain-box captain-2">
+            <div class="captain-badge">CAPITÁN 2</div>
+            <div id="captain-2-name" class="captain-name">Jugador B</div>
+            <div class="captain-coin-side">👑 CRUZ</div>
+          </div>
+        </div>
+
+        <!-- 3D Coin Flip Element -->
+        <div class="coin-stage">
+          <div id="coin" class="coin">
+            <div class="coin-front">🪙<br><span>CARA</span></div>
+            <div class="coin-back">👑<br><span>CRUZ</span></div>
+          </div>
+        </div>
+
+        <div id="coin-result-text" class="coin-result-banner">
+          ¡Presioná para tirar la moneda al aire!
+        </div>
+
+        <button type="button" id="btn-flip-coin" class="btn-primary btn-gold-shine">
+          🪙 TIRAR LA MONEDA
+        </button>
+      </div>
     </div>
 
     <!-- Toast Floating Alert -->

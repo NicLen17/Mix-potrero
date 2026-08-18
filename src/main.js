@@ -15,7 +15,16 @@ const state = {
   crackMode: false,
   generatedTeams: null,
   lastSummaryData: null,
-  currentView: 'setup' // 'setup' | 'teams' | 'summary' | 'tutorial'
+  currentView: 'setup', // 'setup' | 'teams' | 'summary' | 'tutorial'
+  
+  // Captains Sorteo state
+  captain1: null,
+  captain2: null,
+  coinFlipping: false,
+  
+  // Vaquita state
+  pitchCost: 0,
+  paymentsMap: {} // { 'player_id_or_name': boolean }
 };
 
 // ==========================================
@@ -38,6 +47,16 @@ const elements = {
   crackRatingsPanel: document.getElementById('crack-ratings-panel'),
   crackPlayersContainer: document.getElementById('crack-players-container'),
   btnGenerateTeams: document.getElementById('btn-generate-teams'),
+  btnDrawCaptains: document.getElementById('btn-draw-captains'),
+
+  // Captains Modal Controls
+  captainsModal: document.getElementById('captains-modal'),
+  btnCloseCaptainsModal: document.getElementById('btn-close-captains-modal'),
+  captain1Name: document.getElementById('captain-1-name'),
+  captain2Name: document.getElementById('captain-2-name'),
+  coin: document.getElementById('coin'),
+  coinResultText: document.getElementById('coin-result-text'),
+  btnFlipCoin: document.getElementById('btn-flip-coin'),
 
   // Teams View Controls
   teamsCardsGrid: document.getElementById('teams-cards-grid'),
@@ -50,6 +69,13 @@ const elements = {
   inputScore1: document.getElementById('input-score-1'),
   inputScore2: document.getElementById('input-score-2'),
   btnShareSummary: document.getElementById('btn-share-summary'),
+
+  // Vaquita Controls
+  vaquitaProgressBadge: document.getElementById('vaquita-progress-badge'),
+  pitchCostInput: document.getElementById('pitch-cost-input'),
+  pricePerHead: document.getElementById('price-per-head'),
+  vaquitaPlayersContainer: document.getElementById('vaquita-players-container'),
+  btnCopyVaquitaWhatsapp: document.getElementById('btn-copy-vaquita-whatsapp'),
 
   // Summary View Controls
   summaryImageContainer: document.getElementById('summary-image-container'),
@@ -94,6 +120,8 @@ function setView(viewName) {
     renderTutorial();
   } else if (viewName === 'summary') {
     renderSummaryView();
+  } else if (viewName === 'teams') {
+    renderVaquita();
   }
 
   // Scroll to top
@@ -135,6 +163,9 @@ function updatePlayerList() {
 
   // Validate generate button
   elements.btnGenerateTeams.disabled = count < state.teamCount;
+  if (elements.btnDrawCaptains) {
+    elements.btnDrawCaptains.disabled = count < 2;
+  }
 
   // Render crack ratings if mode is active
   if (state.crackMode) {
@@ -207,6 +238,87 @@ function renderCrackRatings() {
       }
     });
   });
+}
+
+// ==========================================
+// Captains Sorteo & Coin Flip
+// ==========================================
+function openCaptainsModal() {
+  if (state.players.length < 2) {
+    showToast('Necesitás al menos 2 jugadores para el sorteo', '⚠️');
+    return;
+  }
+
+  let candidates = [...state.players];
+
+  if (state.crackMode) {
+    // Sort by rating descending
+    candidates.sort((a, b) => (b.rating || 3) - (a.rating || 3));
+    state.captain1 = candidates[0];
+    state.captain2 = candidates[1];
+  } else {
+    // Pick 2 at random
+    const shuffled = candidates.sort(() => 0.5 - Math.random());
+    state.captain1 = shuffled[0];
+    state.captain2 = shuffled[1];
+  }
+
+  elements.captain1Name.textContent = state.captain1.name;
+  elements.captain2Name.textContent = state.captain2.name;
+
+  // Reset UI
+  elements.coin.style.transform = 'rotateY(0deg)';
+  elements.coinResultText.textContent = '¡Presioná para tirar la moneda al aire!';
+  document.querySelectorAll('.captain-box').forEach((box) => box.classList.remove('winner'));
+  elements.btnFlipCoin.disabled = false;
+
+  elements.captainsModal.style.display = 'flex';
+}
+
+function closeCaptainsModal() {
+  elements.captainsModal.style.display = 'none';
+}
+
+function handleFlipCoin() {
+  if (state.coinFlipping) return;
+  state.coinFlipping = true;
+  elements.btnFlipCoin.disabled = true;
+
+  // Clear previous result
+  document.querySelectorAll('.captain-box').forEach((box) => box.classList.remove('winner'));
+  elements.coinResultText.textContent = '🪙 La moneda está girando...';
+
+  // Determine winner: 0 = CARA (Captain 1), 1 = CRUZ (Captain 2)
+  const isCara = Math.random() < 0.5;
+  const turns = 8 + (isCara ? 0 : 0.5); // 8 full spins + half spin if Cruz
+  const finalDegree = turns * 360;
+
+  // Apply CSS rotation
+  elements.coin.style.transform = `rotateY(${finalDegree}deg)`;
+
+  if (navigator.vibrate) navigator.vibrate([30, 50, 30, 50, 100]);
+
+  setTimeout(() => {
+    state.coinFlipping = false;
+    elements.btnFlipCoin.disabled = false;
+
+    const winnerCaptain = isCara ? state.captain1 : state.captain2;
+    const winnerBoxClass = isCara ? '.captain-1' : '.captain-2';
+    const sideText = isCara ? 'CARA 🪙' : 'CRUZ 👑';
+
+    document.querySelector(winnerBoxClass).classList.add('winner');
+    elements.coinResultText.innerHTML = `🎉 ¡Salió <strong>${sideText}</strong>! Elige primero: <strong>${winnerCaptain.name}</strong>`;
+
+    try {
+      confetti({
+        particleCount: 40,
+        spread: 50,
+        origin: { y: 0.7 }
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }, 3000);
 }
 
 // ==========================================
@@ -295,6 +407,135 @@ function renderTeamsView() {
     elements.inputScore2.value = '';
   } else {
     elements.matchScoreSection.style.display = 'none';
+  }
+
+  // Render Vaquita Payment Section
+  renderVaquita();
+}
+
+// ==========================================
+// La Vaquita (Organizador de Pago)
+// ==========================================
+function renderVaquita() {
+  state.pitchCost = storage.getPitchCost();
+  state.paymentsMap = storage.getPayments();
+
+  if (elements.pitchCostInput) {
+    elements.pitchCostInput.value = state.pitchCost > 0 ? state.pitchCost : '';
+  }
+
+  // Determine current active player list
+  let activePlayers = state.players;
+  if (!activePlayers || activePlayers.length === 0) {
+    if (state.generatedTeams) {
+      activePlayers = state.generatedTeams.flatMap((t) => t.players);
+    }
+  }
+
+  const totalPlayers = activePlayers.length;
+
+  if (totalPlayers === 0) {
+    elements.pricePerHead.textContent = '$0';
+    elements.vaquitaProgressBadge.textContent = '0/0 Pagaron';
+    elements.vaquitaPlayersContainer.innerHTML = `
+      <div style="text-align: center; color: var(--text-muted); padding: 12px; font-size: 0.9rem;">
+        Cargá una lista de jugadores para calcular los pagos.
+      </div>
+    `;
+    return;
+  }
+
+  const perHead = state.pitchCost > 0 ? Math.ceil(state.pitchCost / totalPlayers) : 0;
+  elements.pricePerHead.textContent = `$${perHead.toLocaleString('es-AR')}`;
+
+  let paidCount = 0;
+
+  elements.vaquitaPlayersContainer.innerHTML = activePlayers
+    .map((p) => {
+      const isPaid = Boolean(state.paymentsMap[p.name]);
+      if (isPaid) paidCount++;
+
+      return `
+        <div class="vaquita-player-row ${isPaid ? 'paid' : ''}" data-player-name="${p.name}">
+          <div class="vaquita-left">
+            <input type="checkbox" class="vaquita-checkbox" ${isPaid ? 'checked' : ''} />
+            <span class="vaquita-name">${p.name}</span>
+          </div>
+          <span class="vaquita-status-badge ${isPaid ? 'paid' : 'unpaid'}">
+            ${isPaid ? '✅ PAGÓ' : '❌ DEBE'}
+          </span>
+        </div>
+      `;
+    })
+    .join('');
+
+  elements.vaquitaProgressBadge.textContent = `${paidCount}/${totalPlayers} Pagaron`;
+
+  // Attach event listeners to rows/checkboxes
+  elements.vaquitaPlayersContainer.querySelectorAll('.vaquita-player-row').forEach((row) => {
+    row.addEventListener('click', (e) => {
+      const name = row.getAttribute('data-player-name');
+      const isCurrentlyPaid = Boolean(state.paymentsMap[name]);
+      state.paymentsMap[name] = !isCurrentlyPaid;
+      storage.setPayments(state.paymentsMap);
+
+      if (navigator.vibrate) navigator.vibrate(15);
+      renderVaquita();
+    });
+  });
+}
+
+function copyVaquitaToWhatsapp() {
+  let activePlayers = state.players;
+  if (!activePlayers || activePlayers.length === 0) {
+    if (state.generatedTeams) {
+      activePlayers = state.generatedTeams.flatMap((t) => t.players);
+    }
+  }
+
+  if (!activePlayers || activePlayers.length === 0) {
+    showToast('No hay jugadores para armar la vaquita', '⚠️');
+    return;
+  }
+
+  const totalPlayers = activePlayers.length;
+  const totalCost = state.pitchCost || 0;
+  const perHead = totalCost > 0 ? Math.ceil(totalCost / totalPlayers) : 0;
+
+  const paidList = activePlayers.filter((p) => Boolean(state.paymentsMap[p.name]));
+  const unpaidList = activePlayers.filter((p) => !Boolean(state.paymentsMap[p.name]));
+
+  let text = `💰 *MIX-POTRERO | LA VAQUITA DE LA CANCHA*\n`;
+  text += `💵 Costo Total: $${totalCost.toLocaleString('es-AR')}\n`;
+  text += `👤 Por persona: *$${perHead.toLocaleString('es-AR')}* (${totalPlayers} jugadores)\n\n`;
+
+  if (paidList.length > 0) {
+    text += `✅ *PAGARON (${paidList.length}):*\n`;
+    paidList.forEach((p) => {
+      text += `• ${p.name}\n`;
+    });
+    text += `\n`;
+  }
+
+  if (unpaidList.length > 0) {
+    text += `❌ *FALTA COBRAR (${unpaidList.length}):*\n`;
+    unpaidList.forEach((p) => {
+      text += `• ${p.name}\n`;
+    });
+    text += `\n`;
+  }
+
+  text += `⚡ Armado con mix-potrero.app`;
+
+  if (navigator.clipboard) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        showToast('Lista de cobro copiada', '📋');
+      })
+      .catch(() => {
+        showToast('Error al copiar la lista', '❌');
+      });
   }
 }
 
@@ -488,6 +729,30 @@ function init() {
       renderCrackRatings();
     }
   });
+
+  // Captains Modal Listeners
+  if (elements.btnDrawCaptains) {
+    elements.btnDrawCaptains.addEventListener('click', openCaptainsModal);
+  }
+  if (elements.btnCloseCaptainsModal) {
+    elements.btnCloseCaptainsModal.addEventListener('click', closeCaptainsModal);
+  }
+  if (elements.btnFlipCoin) {
+    elements.btnFlipCoin.addEventListener('click', handleFlipCoin);
+  }
+
+  // Vaquita Listeners
+  if (elements.pitchCostInput) {
+    elements.pitchCostInput.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10) || 0;
+      state.pitchCost = val;
+      storage.setPitchCost(val);
+      renderVaquita();
+    });
+  }
+  if (elements.btnCopyVaquitaWhatsapp) {
+    elements.btnCopyVaquitaWhatsapp.addEventListener('click', copyVaquitaToWhatsapp);
+  }
 
   // Action Buttons
   elements.btnGenerateTeams.addEventListener('click', executeTeamGeneration);

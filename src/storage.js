@@ -5,7 +5,9 @@ const STORAGE_KEYS = {
   CRACK_MODE: 'mix_potrero_crack_mode',
   TEAM_COUNT: 'mix_potrero_team_count',
   LAST_TEAMS: 'mix_potrero_last_teams',
-  MATCH_HISTORY: 'mix_potrero_history'
+  MATCH_HISTORY: 'mix_potrero_history',
+  PITCH_COST: 'mix_potrero_pitch_cost',
+  PAYMENTS: 'mix_potrero_payments'
 };
 
 export const storage = {
@@ -94,10 +96,45 @@ export const storage = {
     }
   },
 
+  getPitchCost() {
+    try {
+      const cost = localStorage.getItem(STORAGE_KEYS.PITCH_COST);
+      return cost ? parseInt(cost, 10) : 0;
+    } catch {
+      return 0;
+    }
+  },
+
+  setPitchCost(cost) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PITCH_COST, String(cost));
+    } catch (e) {
+      console.warn('Error saving pitch cost', e);
+    }
+  },
+
+  getPayments() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.PAYMENTS);
+      return data ? JSON.parse(data) : {};
+    } catch {
+      return {};
+    }
+  },
+
+  setPayments(paymentsMap) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PAYMENTS, JSON.stringify(paymentsMap));
+    } catch (e) {
+      console.warn('Error saving payments', e);
+    }
+  },
+
   clearData() {
     try {
       localStorage.removeItem(STORAGE_KEYS.RAW_PLAYERS);
       localStorage.removeItem(STORAGE_KEYS.LAST_TEAMS);
+      localStorage.removeItem(STORAGE_KEYS.PAYMENTS);
     } catch (e) {
       console.warn('Error clearing storage', e);
     }

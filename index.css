@@ -1329,3 +1329,357 @@ input:checked + .slider:before {
 .toast-notification.show {
   transform: translateX(-50%) translateY(0);
 }
+
+/* =========================================================
+   SUBMIT BUTTONS GRID
+   ========================================================= */
+.submit-buttons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (max-width: 480px) {
+  .submit-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   MODAL: SORTEO DE CAPITANES & MONEDA 3D
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 12, 7, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.25s ease;
+}
+
+.modal-card {
+  background: linear-gradient(180deg, rgba(18, 42, 26, 0.98) 0%, rgba(8, 22, 13, 0.99) 100%);
+  border: 2px solid var(--gold-primary);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+  position: relative;
+  text-align: center;
+  animation: cardPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.modal-header-tag {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--gold-light);
+  letter-spacing: 1.5px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid var(--border-gold);
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 6px;
+}
+
+.modal-title {
+  font-family: var(--font-sports);
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.captains-versus-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.captain-box {
+  flex: 1;
+  background: var(--bg-card-inner);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition-fast);
+}
+
+.captain-box.winner {
+  border-color: var(--gold-primary);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(15, 36, 22, 0.9) 100%);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
+  transform: scale(1.04);
+}
+
+.captain-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--gold-light);
+  letter-spacing: 1px;
+}
+
+.captain-name {
+  font-family: var(--font-sports);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.captain-coin-side {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.vs-badge {
+  font-family: var(--font-sports);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* 3D Coin Animation */
+.coin-stage {
+  width: 100px;
+  height: 100px;
+  margin: 10px auto 16px;
+  perspective: 800px;
+}
+
+.coin {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 3s cubic-bezier(0.15, 0.85, 0.35, 1.2);
+}
+
+.coin-front, .coin-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+.coin-front span, .coin-back span {
+  font-family: var(--font-sports);
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  color: #041207;
+  font-weight: 800;
+  margin-top: -2px;
+}
+
+.coin-front {
+  background: radial-gradient(circle, #fde047 0%, #f59e0b 70%, #d97706 100%);
+  border: 3px solid #fef08a;
+  color: #78350f;
+}
+
+.coin-back {
+  background: radial-gradient(circle, #fef08a 0%, #eab308 70%, #ca8a04 100%);
+  border: 3px solid #ffffff;
+  color: #713f12;
+  transform: rotateY(180deg);
+}
+
+.coin-result-banner {
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-gold-shine {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+}
+
+/* =========================================================
+   LA VAQUITA (ORGANIZADOR DE PAGO)
+   ========================================================= */
+.vaquita-card {
+  border: 1.5px solid var(--border-gold);
+  background: linear-gradient(180deg, rgba(16, 38, 24, 0.95) 0%, rgba(8, 20, 12, 0.98) 100%);
+}
+
+.vaquita-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+  background: var(--bg-card-inner);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vaquita-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vaquita-field label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vaquita-input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: var(--gold-light);
+  font-family: var(--font-sports);
+  font-size: 1.4rem;
+  font-weight: 700;
+  outline: none;
+  width: 100%;
+}
+
+.vaquita-input:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 0 2px var(--gold-glow);
+}
+
+.vaquita-per-head {
+  font-family: var(--font-sports);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--grass-bright);
+  padding: 8px 0;
+}
+
+.vaquita-players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.vaquita-player-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card-inner);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition-fast);
+}
+
+.vaquita-player-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.vaquita-player-row.paid {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.vaquita-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vaquita-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--grass-bright);
+  cursor: pointer;
+}
+
+.vaquita-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.vaquita-status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.vaquita-status-badge.paid {
+  background: rgba(34, 197, 94, 0.2);
+  color: var(--grass-bright);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.vaquita-status-badge.unpaid {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
